@@ -1,0 +1,18 @@
+{
+  "host": "",
+  "port": 8000,
+  "debug": false,
+  "dict_directory": "dict",
+  "resource_directory": "mdx",
+  "cache_enabled": true,
+  "max_word_length": 100,
+  "log_level": "INFO",
+  "log_file": null,
+  "server_type": "threaded",
+  "max_threads": 20,
+  "request_queue_size": 50,
+  "connection_timeout": 30,
+  "use_gunicorn": true,
+  "gunicorn_workers": 4,
+  "gunicorn_threads": 5
+}

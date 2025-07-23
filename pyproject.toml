@@ -1,0 +1,53 @@
+[project]
+name = "mdx-server"
+version = "0.1.0"
+description = "MDX dictionary server"
+authors = [{ name = "Libukai", email = "xiaobuyao@gmail.com" }]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "gunicorn>=21.0.0",  # Production WSGI server
+]
+
+
+[dependency-groups]
+dev = ["ruff>=0.12.1", "ty>=0.0.1a14", "pytest>=8.0.0"]
+
+
+[build-system]
+requires = ["uv_build>=0.8.0"]
+build-backend = "uv_build"
+
+[tool.uv]
+dev-dependencies = ["ruff>=0.1.0", "ty>=0.0.1a14"]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501", # line too long, handled by ruff formatter
+    "B008", # do not perform function calls in argument defaults
+    "F403", # import * only allowed to namespace packages
+    "F405", # import * only allowed to namespace packages
+]
+
+[tool.ruff.format]
+# Use double quotes for strings
+quote-style = "double"
+# Use spaces around the equals sign
+indent-style = "space"
+# Respect line length for docstrings
+docstring-code-format = true
+# Ensure imports are formatted
+skip-magic-trailing-comma = false
