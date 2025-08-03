@@ -1,0 +1,52 @@
+# Python cache and compiled files
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.so
+.Python
+
+# Database files
+*.db
+*.sqlite3
+
+# Log files
+*.log
+logs/
+
+# Documentation
+*.md
+*.docx
+*.pdf
+manual/
+
+# Version control and build
+.git
+.gitignore
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+# Development
+tests/
+.pytest_cache/
+.coverage
+.tox/
+
+# Virtual environments
+.venv/
+venv/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Temporary files
+*.tmp
+*.temp

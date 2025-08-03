@@ -1,59 +1,42 @@
-# Use an official Python runtime as a parent image
-FROM python:3.11-slim
+# 第一阶段：构建依赖
+FROM python:3.13-slim AS builder
 
-# Set environment variables for performance
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y gcc && rm -rf /var/lib/apt/lists/*
 
-# Set the working directory in the container
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+# 先复制依赖和元数据文件
+COPY pyproject.toml uv.lock ./
+# 再复制源码
+COPY src ./src
 
-# Install uv for faster dependency management
-RUN pip install uv
+RUN pip install --no-cache-dir uv && uv sync
 
-# Install dependencies (no --frozen since we may not have exact lock)
-RUN uv sync
+# 第二阶段：生产镜像
+FROM python:3.13-slim
 
-# Create an empty dict directory in the correct location
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+WORKDIR /app
+
+# 只复制运行所需内容
+COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/python3.13/site-packages
+COPY --from=builder /usr/local/bin/uv /usr/local/bin/uv
+COPY src /app/src
+COPY pyproject.toml /app/
+
+# 创建 dict 目录
 RUN mkdir -p /app/src/mdx_server/dict
 
-# Make port 8000 available to the world outside this container
-EXPOSE 8000
-
-# Set working directory to where the server script is located
 WORKDIR /app/src/mdx_server
 
-# Create a production config for Docker
-RUN echo '{\
-  "host": "0.0.0.0",\
-  "port": 8000,\
-  "debug": false,\
-  "dict_directory": "dict",\
-  "resource_directory": "mdx",\
-  "cache_enabled": true,\
-  "max_word_length": 100,\
-  "log_level": "INFO",\
-  "log_file": null,\
-  "server_type": "threaded",\
-  "max_threads": 20,\
-  "request_queue_size": 50,\
-  "connection_timeout": 30,\
-  "use_gunicorn": false,\
-  "gunicorn_workers": 4,\
-  "gunicorn_threads": 5\
-}' > config.json
+EXPOSE 8000
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8000/health || exit 1
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
-# Run mdx_server.py when the container launches
 CMD ["python", "mdx_server.py"]

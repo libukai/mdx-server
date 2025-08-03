@@ -3,23 +3,17 @@ name = "mdx-server"
 version = "0.1.0"
 description = "MDX dictionary server"
 authors = [{ name = "Libukai", email = "xiaobuyao@gmail.com" }]
-readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "gunicorn>=21.0.0",  # Production WSGI server
+    "gunicorn>=21.0.0", # Production WSGI server
 ]
 
-
 [dependency-groups]
-dev = ["ruff>=0.12.1", "ty>=0.0.1a14", "pytest>=8.0.0"]
-
+dev = ["ruff>=0.12.1", "pytest>=8.0.0", "mypy>=1.17.1"]
 
 [build-system]
 requires = ["uv_build>=0.8.0"]
 build-backend = "uv_build"
-
-[tool.uv]
-dev-dependencies = ["ruff>=0.1.0", "ty>=0.0.1a14"]
 
 [tool.ruff]
 target-version = "py313"

@@ -1,7 +1,7 @@
 {
   "host": "",
-  "port": 8000,
-  "debug": false,
+  "port": 8888,
+  "debug": true,
   "dict_directory": "dict",
   "resource_directory": "mdx",
   "cache_enabled": true,
@@ -12,7 +12,22 @@
   "max_threads": 20,
   "request_queue_size": 50,
   "connection_timeout": 30,
-  "use_gunicorn": true,
+  "use_gunicorn": false,
   "gunicorn_workers": 4,
-  "gunicorn_threads": 5
+  "gunicorn_threads": 5,
+
+  "dictionaries": {
+    "scene": {
+      "name": "Scene English Dictionary",
+      "path": "dict/SceneEnglish.mdx",
+      "route": "scene",
+      "enabled": true
+    },
+    "default": {
+      "name": "Default Dictionary",
+      "path": "dict/SceneEnglish.mdx",
+      "route": "",
+      "enabled": true
+    }
+  }
 }

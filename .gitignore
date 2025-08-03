@@ -97,3 +97,10 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# ruff cache
+.ruff_cache/
+.mypy_cache/
+
+# Dict
+dict/

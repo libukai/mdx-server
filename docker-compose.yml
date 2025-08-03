@@ -1,7 +1,30 @@
 services:
   mdx-server:
     build: .
+    container_name: mdx-server
     ports:
       - "8000:8000"
     volumes:
-      - /Users/likai/Downloads/dict:/app/dict
+      # 词典文件目录 - 将本地 dict 目录映射到容器内的词典目录
+      - ./dict:/app/src/mdx_server/dict
+      # 可选：日志目录
+      - ./logs:/app/logs
+    environment:
+      # 可以通过环境变量覆盖配置
+      - MDX_HOST=0.0.0.0
+      - MDX_PORT=8000
+      - MDX_DEBUG=false
+      - MDX_LOG_LEVEL=INFO
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
