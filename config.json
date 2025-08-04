@@ -6,6 +6,12 @@
       "route": "scene",
       "enabled": true
     },
+    "frequency": {
+      "name": "英语词频词典",
+      "path": "/dict/WordFrequency.mdx",
+      "route": "frequency",
+      "enabled": true
+    },
     "default": {
       "name": "默认词典",
       "path": "/dict/SceneEnglish.mdx",

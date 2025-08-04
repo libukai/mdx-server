@@ -16,24 +16,11 @@ from typing import Any
 from urllib.parse import unquote
 from wsgiref.simple_server import WSGIRequestHandler, WSGIServer, make_server
 
-# Handle both relative imports (when run as module) and direct execution
-try:
-    from .config import ServerConfig, load_config
-    from .file_util import file_util_get_ext
-    from .mdx_util import get_definition_mdd
-    from .multi_dict_manager import MultiDictManager
-except ImportError:
-    # Running directly, add parent directory to path
-    import sys
-    from pathlib import Path
-
-    parent_dir = Path(__file__).parent.parent
-    sys.path.insert(0, str(parent_dir))
-
-    from mdx_server.config import ServerConfig, load_config
-    from mdx_server.file_util import file_util_get_ext
-    from mdx_server.mdx_util import get_definition_mdd
-    from mdx_server.multi_dict_manager import MultiDictManager
+# Import dependencies
+from .config import ServerConfig, load_config
+from .file_util import file_util_get_ext
+from .mdx_util import get_definition_mdd
+from .multi_dict_manager import MultiDictManager
 
 
 class ThreadedWSGIServer(ThreadingMixIn, WSGIServer):

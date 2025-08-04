@@ -1,19 +1,47 @@
 [project]
 name = "mdx-server"
-version = "0.1.0"
-description = "MDX dictionary server"
+version = "2.0.0"
+description = "高性能多词典 MDX/MDD 查询服务器"
+readme = "README.md"
+license = { text = "MIT" }
 authors = [{ name = "Libukai", email = "xiaobuyao@gmail.com" }]
+maintainers = [{ name = "Libukai", email = "xiaobuyao@gmail.com" }]
 requires-python = ">=3.13"
-dependencies = [
-    "gunicorn>=21.0.0", # Production WSGI server
+keywords = ["mdx", "dictionary", "server", "mdd", "词典"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Topic :: Text Processing :: Linguistic",
 ]
+
+# 应用程序依赖，而非库依赖
+dependencies = [
+    "gunicorn>=21.0.0",  # Production WSGI server
+]
+
+# 应用程序脚本入口
+[project.scripts]
+mdx-server = "run_server:main"
+
+[project.urls]
+Homepage = "https://github.com/your-repo/mdx-server"
+Repository = "https://github.com/your-repo/mdx-server"
+Issues = "https://github.com/your-repo/mdx-server/issues"
+Documentation = "https://github.com/your-repo/mdx-server#readme"
 
 [dependency-groups]
 dev = ["ruff>=0.12.1", "pytest>=8.0.0", "mypy>=1.17.1", "rich>=14.1.0"]
 
-[build-system]
-requires = ["uv_build>=0.8.0"]
-build-backend = "uv_build"
+# 不需要 build-system，因为这是应用程序而不是库
+# [build-system]
+# requires = ["uv_build>=0.8.0"]
+# build-backend = "uv_build"
 
 [tool.ruff]
 target-version = "py313"

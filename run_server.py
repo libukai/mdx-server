@@ -2,18 +2,16 @@
 """
 MDX Server Entry Point
 
-This script provides a clean entry point for running the MDX server,
-resolving relative import issues when running the server directly.
+Simple entry point for running the MDX dictionary server.
 """
 
-import sys
-from pathlib import Path
+from mdx_server.mdx_server import main as _main
 
-# Add the src directory to Python path
-src_path = Path(__file__).parent / "src"
-sys.path.insert(0, str(src_path))
 
-from mdx_server.mdx_server import main  # noqa: E402
+def main():
+    """Entry point for mdx-server command."""
+    _main()
+
 
 if __name__ == "__main__":
     main()
