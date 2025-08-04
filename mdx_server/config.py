@@ -98,15 +98,23 @@ class ServerConfig:
 
             # 处理多词典配置
             if "dictionaries" in data:
+                # 创建临时配置实例用于路径解析
+                temp_config = cls(**{k: v for k, v in data.items() if k != "dictionaries"})
+                
                 dict_configs = {}
                 for dict_id, dict_data in data["dictionaries"].items():
                     if isinstance(dict_data, dict):
-                        dict_configs[dict_id] = DictConfig(**dict_data)
+                        # 解析字典路径
+                        resolved_path = temp_config.resolve_dict_path(dict_data.get("path", ""))
+                        dict_data_copy = dict_data.copy()
+                        dict_data_copy["path"] = resolved_path
+                        dict_configs[dict_id] = DictConfig(**dict_data_copy)
                     else:
                         # 简化配置格式兼容
+                        resolved_path = temp_config.resolve_dict_path(str(dict_data))
                         dict_configs[dict_id] = DictConfig(
                             name=dict_id,
-                            path=str(dict_data),
+                            path=resolved_path,
                             route=dict_id if dict_id != "default" else "",
                         )
                 data["dictionaries"] = dict_configs
@@ -136,6 +144,29 @@ class ServerConfig:
         config_path.parent.mkdir(parents=True, exist_ok=True)
         with open(config_path, "w", encoding="utf-8") as f:
             json.dump(asdict(self), f, indent=2)
+
+    def resolve_dict_path(self, dict_path: str) -> str:
+        """Resolve dictionary path considering Docker and local environments."""
+        # 如果是绝对路径，直接返回
+        if Path(dict_path).is_absolute():
+            return dict_path
+        
+        # 相对路径处理：优先检查 /dict (Docker), 然后 dict (本地)
+        possible_paths = [
+            Path("/dict") / dict_path,  # Docker 环境
+            Path("dict") / dict_path,   # 本地环境
+            Path(dict_path),            # 当前目录相对路径
+        ]
+        
+        for path in possible_paths:
+            if path.exists():
+                return str(path)
+        
+        # 如果都不存在，根据环境返回最可能的路径
+        if Path("/dict").exists():
+            return str(Path("/dict") / dict_path)  # Docker 环境
+        else:
+            return str(Path("dict") / dict_path)   # 本地环境
 
     def auto_discover_dictionaries(self) -> None:
         """Auto-discover MDX files if no dictionaries configured."""
@@ -188,12 +219,22 @@ class ServerConfig:
 
 def load_config() -> ServerConfig:
     """Load configuration from multiple sources with priority."""
-    # 1. 先尝试从 /app/config.json 加载 (Docker 环境)
-    config_file = Path("/app/config.json")
-    if not config_file.exists():
-        # 2. fallback 到原来的位置 (开发环境)
-        base_path = Path(__file__).parent
-        config_file = base_path / "config.json"
+    # 配置文件查找优先级
+    config_paths = [
+        Path("/app/config.json"),  # 1. Docker 环境
+        Path(__file__).parent.parent / "config.json",  # 2. 项目根目录 (开发环境)
+        Path(__file__).parent / "config.json",  # 3. mdx_server/ 目录 (兼容旧版本)
+    ]
+    
+    config_file = None
+    for path in config_paths:
+        if path.exists():
+            config_file = path
+            break
+    
+    # 如果都找不到，使用默认配置
+    if config_file is None:
+        config_file = config_paths[1]  # 使用项目根目录作为默认路径
 
     config = ServerConfig.from_file(config_file)
 

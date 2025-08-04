@@ -12,11 +12,11 @@ services:
       # 可选：日志目录
       - ./logs:/app/logs
     # environment:
-      # 可选配置：如需自定义服务器参数请取消注释并修改
-      # MDX_PORT: 8000          # 服务器端口，默认: 8000
-      # MDX_DEBUG: true         # 调试模式，默认: false  
-      # MDX_LOG_LEVEL: DEBUG    # 日志级别，默认: INFO
-      # MDX_DICT_DIR: /dict     # 词典目录，默认: 自动检测
+    # 可选配置：如需自定义服务器参数请取消注释并修改
+    # MDX_PORT: 8000          # 服务器端口，默认: 8000
+    # MDX_DEBUG: true         # 调试模式，默认: false
+    # MDX_LOG_LEVEL: DEBUG    # 日志级别，默认: INFO
+    # MDX_DICT_DIR: /dict     # 词典目录，默认: 自动检测
     restart: unless-stopped
     healthcheck:
       test:

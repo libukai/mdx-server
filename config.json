@@ -2,19 +2,19 @@
   "dictionaries": {
     "scene": {
       "name": "场景英语词典",
-      "path": "/dict/SceneEnglish.mdx",
+      "path": "SceneEnglish.mdx",
       "route": "scene",
       "enabled": true
     },
     "frequency": {
       "name": "英语词频词典",
-      "path": "/dict/WordFrequency.mdx",
+      "path": "WordFrequency.mdx",
       "route": "frequency",
       "enabled": true
     },
     "default": {
       "name": "默认词典",
-      "path": "/dict/SceneEnglish.mdx",
+      "path": "WordFrequency.mdx",
       "route": "",
       "enabled": true
     }
