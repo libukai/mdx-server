@@ -87,6 +87,16 @@
     ```bash
     docker compose up -d
     ```
+    
+    或者直接使用预构建镜像：
+    ```bash
+    docker run -d \
+      --name mdx-server \
+      -p 8000:8000 \
+      -v $(pwd)/dict:/dict \
+      -v $(pwd)/config.json:/app/config.json \
+      ghcr.io/your-username/mdx-server:latest
+    ```
 
 4.  **访问验证**:
     - 🌐 http://localhost:8000/scene/hello - 通过路由访问词典

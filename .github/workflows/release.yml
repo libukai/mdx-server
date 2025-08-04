@@ -1,0 +1,109 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # 获取上一个标签
+        PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
+        
+        # 生成变更日志
+        if [ -z "$PREVIOUS_TAG" ]; then
+          CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges)
+        else
+          CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges $PREVIOUS_TAG..HEAD)
+        fi
+        
+        # 输出到 GitHub Actions
+        echo "changelog<<EOF" >> $GITHUB_OUTPUT
+        echo "$CHANGELOG" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: MDX Server ${{ github.ref_name }}
+        body: |
+          ## 🚀 MDX Server ${{ github.ref_name }}
+          
+          ### 📦 Docker 镜像
+          
+          **GitHub Container Registry**:
+          ```bash
+          docker pull ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+          docker pull ghcr.io/${{ github.repository }}:latest
+          ```
+          
+          ### 🔧 快速启动
+          
+          1. 创建配置和词典目录:
+          ```bash
+          mkdir dict
+          # 将 .mdx 和 .mdd 文件放入 dict/ 目录
+          ```
+          
+          2. 创建 docker-compose.yml:
+          ```yaml
+          services:
+            mdx-server:
+              image: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+              container_name: mdx-server
+              ports:
+                - "8000:8000"
+              volumes:
+                - ./dict:/dict
+                - ./config.json:/app/config.json
+                - ./logs:/app/logs
+              restart: unless-stopped
+          ```
+          
+          3. 启动服务:
+          ```bash
+          docker-compose up -d
+          ```
+          
+          ### 📋 本版本更新
+          
+          ${{ steps.changelog.outputs.changelog }}
+          
+          ### 🔗 相关链接
+          
+          - 📖 [使用文档](https://github.com/${{ github.repository }}#readme)
+          - 📦 [GitHub Packages](https://github.com/${{ github.repository }}/pkgs/container/mdx-server)
+        draft: false
+        prerelease: ${{ contains(github.ref_name, '-') }}
+
+    - name: Create source archive
+      run: |
+        git archive --format=tar.gz --prefix=mdx-server-${{ github.ref_name }}/ HEAD > mdx-server-${{ github.ref_name }}.tar.gz
+        git archive --format=zip --prefix=mdx-server-${{ github.ref_name }}/ HEAD > mdx-server-${{ github.ref_name }}.zip
+
+    - name: Upload Release Assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./mdx-server-${{ github.ref_name }}.tar.gz
+        asset_name: mdx-server-${{ github.ref_name }}.tar.gz
+        asset_content_type: application/gzip

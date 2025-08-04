@@ -1,0 +1,92 @@
+name: Test and Validate
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+    
+    - name: Install dependencies
+      run: uv sync --all-extras
+    
+    - name: Lint with ruff
+      run: |
+        uv run ruff check .
+        uv run ruff format --check .
+    
+    - name: Type check with mypy
+      run: uv run mypy mdx_server/
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+    
+    - name: Install dependencies
+      run: uv sync --all-extras
+    
+    - name: Run tests
+      run: uv run pytest
+
+  docker-build-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: false
+        tags: mdx-server:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+    
+    - name: Test Docker image
+      run: |
+        # 创建测试目录和配置
+        mkdir -p test-dict
+        echo '{"dictionaries": {}}' > test-config.json
+        
+        # 启动容器
+        docker run -d \
+          --name mdx-server-test \
+          -p 8000:8000 \
+          -v $(pwd)/test-dict:/dict \
+          -v $(pwd)/test-config.json:/app/config.json \
+          mdx-server:test
+        
+        # 等待服务启动
+        sleep 10
+        
+        # 测试健康检查
+        curl -f http://localhost:8000/health || exit 1
+        
+        # 清理
+        docker stop mdx-server-test
+        docker rm mdx-server-test
