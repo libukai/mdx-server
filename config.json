@@ -1,0 +1,16 @@
+{
+  "dictionaries": {
+    "scene": {
+      "name": "场景英语词典",
+      "path": "/dict/SceneEnglish.mdx",
+      "route": "scene",
+      "enabled": true
+    },
+    "default": {
+      "name": "默认词典",
+      "path": "/dict/SceneEnglish.mdx",
+      "route": "",
+      "enabled": true
+    }
+  }
+}

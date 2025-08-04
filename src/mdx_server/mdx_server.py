@@ -382,7 +382,9 @@ class MDXServer:
         # Multi-component paths (dict_route/resource or dict_route/word)
         return self._handle_multi_component(path_parts, start_response)
 
-    def _handle_single_component(self, component: str, start_response: Any) -> list[bytes]:
+    def _handle_single_component(
+        self, component: str, start_response: Any
+    ) -> list[bytes]:
         """Handle single path component (resource or word lookup)."""
         # Check if it's a resource file
         if file_util_get_ext(component) in self.CONTENT_TYPES:
@@ -391,7 +393,9 @@ class MDXServer:
         # Otherwise it's a word lookup in default dictionary
         return self._handle_word_lookup(component, start_response, "")
 
-    def _handle_multi_component(self, path_parts: list[str], start_response: Any) -> list[bytes]:
+    def _handle_multi_component(
+        self, path_parts: list[str], start_response: Any
+    ) -> list[bytes]:
         """Handle multi-component paths with dictionary routing."""
         potential_route = path_parts[0]
         remaining_path = "/".join(path_parts[1:])
@@ -401,10 +405,14 @@ class MDXServer:
             # Valid dictionary route
             if file_util_get_ext(path_parts[-1]) in self.CONTENT_TYPES:
                 # Resource request: /dict_route/path/to/resource.ext
-                return self._handle_mdd_resource(remaining_path, start_response, potential_route)
+                return self._handle_mdd_resource(
+                    remaining_path, start_response, potential_route
+                )
             else:
                 # Word lookup: /dict_route/word
-                return self._handle_word_lookup(remaining_path, start_response, potential_route)
+                return self._handle_word_lookup(
+                    remaining_path, start_response, potential_route
+                )
 
         # Not a valid dictionary route, treat whole path as resource or return not found
         full_path = "/".join(path_parts)

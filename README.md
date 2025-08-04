@@ -1,132 +1,204 @@
 # MDX Server
 
-MDX Server is a modern, high-performance service for reading MDX/MDD dictionary data and providing standard HTTP interfaces to external tools.
+一个功能强大的多词典 MDX/MDD 查询服务器,基于 Python 实现。
 
-## ✨ Features
+[![Python Version](https://img.shields.io/badge/python-3.13%2B-blue.svg)](https://www.python.org/)
+[![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-### 🆕 New Multi-Dictionary Support
-- 🔀 **Multi-Dictionary Support**: Query multiple dictionaries with different routes
-- 🚀 **Auto-Discovery**: Automatically detects and loads MDX files from directory
-- 📱 **RESTful API**: Modern API endpoints for dictionary management and health checks
-- 🔄 **Backward Compatible**: Existing single-dictionary setups continue to work seamlessly
-- ⚡ **Smart Routing**: Route-based dictionary selection for organized access
-- 📊 **Status Monitoring**: Real-time dictionary status and health monitoring
+## ✨ 功能特性
 
-### Core Features
-- **Python 3.13+ Modern Implementation**: Fully refactored with modern Python features
-- **High Performance**: Threaded server with optimized query processing
-- **Docker Support**: Ready-to-deploy containerized setup
-- **Flexible Configuration**: JSON config files and environment variable support
-- **Security**: Input validation and SQL injection protection
+- **多词典支持**: 同时加载和查询多个 MDX/MDD 词典。
+- **动态词典加载**: 无需重启服务器即可添加或删除词典。
+- **自动发现**: 自动扫描并加载指定目录下的词典文件。
+- **RESTful API**: 提供清晰的 API 用于词典查询和管理。
+- **资源文件服务**: 高效提供 MDD 文件中的资源 (CSS, JS, 图片, 音频等)。
+- **灵活配置**: 支持通过 `config.json` 文件或环境变量进行配置。
+- **高性能**: 支持 Gunicorn 进行生产环境部署,也内置了多线程服务器。
+- **Docker 支持**: 提供 `Dockerfile` 和 `docker-compose.yml` 用于快速容器化部署。
+- **健康检查**: 提供 `/health` 端点用于监控服务状态。
 
-## 🚀 Quick Start
+## 🚀 快速开始
 
-### 1. Installation
+### 环境准备
 
-```bash
-# Clone repository
-git clone https://github.com/your-repo/mdx-server.git
-cd mdx-server
+- Python 3.13+
+- [uv](https://github.com/astral-sh/uv) (推荐的包管理器)
 
-# Install dependencies with uv (recommended)
-curl -LsSf https://astral.sh/uv/install.sh | sh
-uv sync
+### 安装
 
-# Or with pip
-pip install -r requirements.txt
-```
+1.  克隆本仓库:
+    ```bash
+    git clone https://github.com/your-username/mdx-server.git
+    cd mdx-server
+    ```
 
-### 2. Setup Dictionaries
+2.  创建虚拟环境并安装依赖:
+    ```bash
+    uv venv
+    source .venv/bin/activate
+    uv sync
+    ```
 
-```bash
-# Place your MDX files in the dictionary directory
-mkdir -p src/mdx_server/dict
-cp your_dictionaries/*.mdx src/mdx_server/dict/
-```
+### 运行
 
-### 3. Run Server
+1.  **准备词典文件**:
+    将你的 `.mdx` 和 `.mdd` 文件放入 `src/mdx_server/dict/` 目录下。
 
-```bash
-cd src/mdx_server
-python3 mdx_server.py
-```
+2.  **启动服务器**:
+    ```bash
+    python run_server.py
+    ```
 
-### 4. Test Multi-Dictionary Features
+    服务器默认运行在 `http://localhost:8000`。
 
-```bash
-# Query default dictionary
-curl http://localhost:8000/hello
+## 🐳 Docker 部署
 
-# Query specific dictionary (if you have oxford.mdx)
-curl http://localhost:8000/oxford/hello
+项目提供了优化的 Docker 配置，实现**零配置启动**，用户体验极佳。
 
-# Get dictionary list
-curl http://localhost:8000/api/dicts
+### 🚀 一键启动
 
-# Health check
-curl http://localhost:8000/health
-```
+1.  **准备词典文件**:
+    ```bash
+    mkdir dict
+    # 将你的 .mdx 和 .mdd 文件放入 dict/ 目录
+    ```
 
-## 📖 API Documentation
-
-### Dictionary Query Routes
-
-| Route | Description | Example |
-|-------|-------------|---------|
-| `GET /{word}` | Query default dictionary | `/hello` |
-| `GET /{route}/{word}` | Query specific dictionary | `/oxford/hello` |
-
-### Management API Routes
-
-| Route | Description | Response |
-|-------|-------------|----------|
-| `GET /api/dicts` | List all dictionaries | JSON dictionary info |
-| `GET /health` | Health check | JSON status |
-
-### Example API Response
-
-```json
-// GET /api/dicts
-{
-  "dictionaries": [
+2.  **创建词典配置** `config.json`:
+    ```json
     {
-      "id": "oxford",
-      "name": "Oxford Dictionary",
-      "route": "oxford", 
-      "path": "dict/oxford.mdx",
-      "enabled": true,
-      "status": "loaded"
+      "dictionaries": {
+        "scene": {
+          "name": "场景英语词典",
+          "path": "/dict/SceneEnglish.mdx",
+          "route": "scene",
+          "enabled": true
+        },
+        "default": {
+          "name": "默认词典",
+          "path": "/dict/SceneEnglish.mdx",
+          "route": "",
+          "enabled": true
+        }
+      }
     }
-  ],
-  "mode": "multi",
-  "total": 1
-}
+    ```
+
+3.  **一键启动**:
+    ```bash
+    docker compose up -d
+    ```
+
+4.  **访问验证**:
+    - 🌐 http://localhost:8000/scene/hello - 通过路由访问词典
+    - 🌐 http://localhost:8000/hello - 默认词典
+    - 📋 http://localhost:8000/api/dicts - 词典列表API
+
+### ✨ 优化特性
+
+- **🎯 智能路径检测**: 自动检测 Docker 环境，无需手动配置词典目录
+- **📁 清晰的文件映射**: 
+  - `./dict` → `/dict` (词典文件)
+  - `./config.json` → `/app/config.json` (配置文件)
+  - `./logs` → `/app/logs` (日志文件)
+- **⚙️ 零环境变量**: 所有参数都有合理默认值
+- **🔧 配置分离**: 业务配置在 config.json，环境配置在 docker-compose.yml
+
+### 🔧 高级配置
+
+如需自定义服务器参数，可在 `docker-compose.yml` 中添加环境变量：
+
+```yaml
+services:
+  mdx-server:
+    # ... 其他配置
+    environment:
+      # 服务器配置
+      MDX_HOST: "0.0.0.0"         # 默认: ""
+      MDX_PORT: 8080              # 默认: 8000  
+      MDX_DEBUG: true             # 默认: false
+      
+      # 目录配置
+      MDX_DICT_DIR: "/dict"       # 默认: 自动检测
+      MDX_RESOURCE_DIR: "mdx"     # 默认: mdx
+      
+      # 性能配置
+      MDX_CACHE_ENABLED: false    # 默认: true
+      MDX_MAX_WORD_LENGTH: 200    # 默认: 100
+      MDX_MAX_THREADS: 10         # 默认: 20
+      MDX_REQUEST_QUEUE_SIZE: 100 # 默认: 50
+      MDX_CONNECTION_TIMEOUT: 60  # 默认: 30
+      
+      # 日志配置
+      MDX_LOG_LEVEL: "DEBUG"      # 默认: INFO
+      
+      # 生产环境配置 (Gunicorn)
+      MDX_SERVER_TYPE: "gunicorn" # 默认: threaded
+      MDX_USE_GUNICORN: true      # 默认: false
+      MDX_GUNICORN_WORKERS: 8     # 默认: 4
+      MDX_GUNICORN_THREADS: 2     # 默认: 5
 ```
 
-## ⚙️ Configuration
-
-### Multi-Dictionary Configuration
-
-Create `src/mdx_server/config.json`:
+### 📋 多词典配置示例
 
 ```json
 {
-  "host": "",
-  "port": 8000,
-  "debug": false,
-  "dict_directory": "dict",
-  
   "dictionaries": {
     "oxford": {
-      "name": "Oxford Advanced Learner's Dictionary",
-      "path": "dict/oxford.mdx",
+      "name": "牛津高阶英汉双解词典",
+      "path": "/dict/OALE10.mdx",
       "route": "oxford",
       "enabled": true
     },
-    "collins": {
-      "name": "Collins Dictionary",
-      "path": "dict/collins.mdx", 
-      "route": "collins",
+    "cambridge": {
+      "name": "剑桥高级学习词典",
+      "path": "/dict/Cambridge.mdx",
+      "route": "cambridge", 
+      "enabled": true
+    },
+    "scene": {
+      "name": "场景英语词典",
+      "path": "/dict/SceneEnglish.mdx",
+      "route": "scene",
+      "enabled": true
+    },
+    "default": {
+      "name": "默认词典",
+      "path": "/dict/SceneEnglish.mdx",
+      "route": "",
+      "enabled": true
+    }
+  }
+}
+```
+
+**访问方式**:
+- `/oxford/hello` - 牛津词典
+- `/cambridge/hello` - 剑桥词典  
+- `/scene/hello` - 场景词典
+- `/hello` - 默认词典
+
+## ⚙️ 配置
+
+服务器可以通过 `src/mdx_server/config.json` 文件或环境变量进行配置。
+
+### 配置文件
+
+在 `src/mdx_server/` 目录下创建一个 `config.json` 文件。如果文件不存在,服务器会使用默认配置并自动发现 `dict` 目录下的词典。
+
+这是一个配置示例:
+
+```json
+{
+  "host": "0.0.0.0",
+  "port": 8000,
+  "debug": false,
+  "dict_directory": "dict",
+  "server_type": "threaded",
+  "dictionaries": {
+    "oale10": {
+      "name": "Oxford Advanced Learner's English-Chinese Dictionary 10",
+      "path": "dict/OALE10.mdx",
+      "route": "oale10",
       "enabled": true
     },
     "default": {
@@ -139,132 +211,68 @@ Create `src/mdx_server/config.json`:
 }
 ```
 
-### Environment Variables
+### 环境变量
+
+你也可以使用环境变量来覆盖 `config.json` 中的设置。
+
+- `MDX_HOST`: 服务器主机名 (默认: `""`)
+- `MDX_PORT`: 服务器端口 (默认: `8000`)
+- `MDX_DEBUG`: 是否开启调试模式 (默认: `false`)
+- `MDX_DICT_DIR`: 词典目录 (默认: `dict`)
+- `MDX_LOG_LEVEL`: 日志级别 (默认: `INFO`)
+
+## 📖 API 端点
+
+- **GET /api/dicts** 或 **GET /api/dictionaries**: 获取加载的词典列表。
+  ```json
+  {
+    "dictionaries": [
+      {
+        "id": "oale10",
+        "name": "Oxford Advanced Learner's English-Chinese Dictionary 10",
+        "route": "oale10",
+        "enabled": true
+      }
+    ],
+    "mode": "multi",
+    "total": 1
+  }
+  ```
+
+- **GET /{word}**: 在默认词典中查询单词。
+
+- **GET /{dict_route}/{word}**: 在指定路由的词典中查询单词。
+
+- **GET /{resource_path}**: 获取 MDD 中的资源文件 (例如 `style.css`, `jquery.js`)。
+
+- **GET /health**: 健康检查端点。
+
+## 🛠️ 开发
+
+### 安装开发依赖
 
 ```bash
-export MDX_PORT=8001
-export MDX_DEBUG=true
-export MDX_DICT_DIR=my_dicts
-python3 mdx_server.py
+uv sync --all-extras
 ```
 
-### Auto-Discovery Mode
+### 代码风格检查和格式化
 
-If no `dictionaries` configuration is provided, the server automatically discovers all `.mdx` files:
+本项目使用 `ruff` 进行代码检查和格式化。
 
 ```bash
-dict/
-├── oxford.mdx          # Route: /oxford/{word}
-├── collins.mdx         # Route: /collins/{word}
-├── default.mdx         # Route: /{word} (default)
-└── etymology.mdx       # Route: /etymology/{word}
+# 格式化代码
+ruff format .
+
+# 检查代码
+ruff check .
 ```
 
-## 🐳 Docker Deployment
-
-### Using Docker Compose (Recommended)
+### 运行测试
 
 ```bash
-# Start services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f mdx-server
+pytest
 ```
 
-### Manual Docker Build
+## 📄 许可证
 
-```bash
-# Build image
-docker build -t mdx-server .
-
-# Run container
-docker run -d \
-  -p 8000:8000 \
-  -v $(pwd)/dict:/app/src/mdx_server/dict \
-  --name mdx-server \
-  mdx-server
-```
-
-## 🔄 Upgrade Guide
-
-### From Single Dictionary (v1.x) to Multi-Dictionary (v2.x)
-
-**No changes required!** The upgrade is seamless:
-
-1. **Existing setup continues to work** - Your current single dictionary remains accessible
-2. **Add more dictionaries** - Simply place additional `.mdx` files in the `dict/` directory
-3. **Optional configuration** - Create `config.json` for custom routes and names
-
-**Before:**
-```
-dict/
-└── my_dictionary.mdx    # Accessible via /{word}
-```
-
-**After:**
-```
-dict/
-├── my_dictionary.mdx    # Still accessible via /{word}
-├── oxford.mdx           # New: /oxford/{word}
-└── collins.mdx          # New: /collins/{word}
-```
-
-## 🛠️ Development
-
-### Code Quality Tools
-
-```bash
-# Linting and formatting
-uv run ruff check .
-uv run ruff format .
-
-# Type checking  
-uv run mypy .
-```
-
-### Testing
-
-```bash
-# Run tests
-uv run pytest
-
-# Test with real MDX files
-python3 -c "from config import load_config; print(load_config())"
-```
-
-## 📚 Documentation
-
-- **[API Design](API_DESIGN.md)** - Complete API specification
-- **[Multi-Dict Architecture](MULTI_DICT_DESIGN.md)** - Technical architecture overview
-- **[Performance Guide](PERFORMANCE_OPTIMIZATION.md)** - Optimization strategies
-- **[Implementation Roadmap](IMPLEMENTATION_ROADMAP.md)** - Development roadmap
-- **[User Manual](src/mdx_server/manual/)** - Detailed user guide with screenshots
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make changes and test thoroughly
-4. Run code quality checks: `uv run ruff check . && uv run ruff format .`
-5. Commit changes: `git commit -m 'Add amazing feature'`
-6. Push to branch: `git push origin feature/amazing-feature`
-7. Open a Pull Request
-
-## 📄 License
-
-This project builds upon [mdict-query](https://github.com/mmjang/mdict-query) and [PythonDictionaryOnline](https://github.com/amazon200code/PythonDictionaryOnline).
-
-## 🎯 Use Cases
-
-MDX Server enables various applications to access dictionary data:
-
-- **Language Learning Apps**: Anki add-ons, vocabulary builders
-- **Reading Tools**: Kindle companion apps, browser extensions
-- **Development Tools**: IDE dictionary plugins, documentation tools
-- **Research**: Academic text analysis, linguistic research
-- **Mobile Apps**: Dictionary apps with custom MDX collections
-
----
-
-Built with ❤️ for the dictionary community. Supports Python 3.13+ with modern async/await patterns and type hints.
+本项目基于 MIT 许可证。

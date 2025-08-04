@@ -29,14 +29,16 @@ COPY --from=builder /usr/local/bin/uv /usr/local/bin/uv
 COPY src /app/src
 COPY pyproject.toml /app/
 
-# 创建 dict 目录
-RUN mkdir -p /app/src/mdx_server/dict
+# 创建词典目录在根目录
+RUN mkdir -p /dict
 
-WORKDIR /app/src/mdx_server
+# 工作目录设为 /app，不是 /app/src/mdx_server
+WORKDIR /app
 
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
 
-CMD ["python", "mdx_server.py"]
+# 从 /app 运行，使用模块方式启动
+CMD ["python", "-m", "src.mdx_server.mdx_server"]

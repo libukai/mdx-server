@@ -30,7 +30,7 @@ class ServerConfig:
     debug: bool = False
 
     # Directory settings
-    dict_directory: str = "dict"
+    dict_directory: str = "/dict" if Path("/dict").exists() else "dict"
     resource_directory: str = "mdx"
 
     # Multi-dictionary settings
@@ -188,10 +188,13 @@ class ServerConfig:
 
 def load_config() -> ServerConfig:
     """Load configuration from multiple sources with priority."""
-    base_path = Path(__file__).parent
+    # 1. 先尝试从 /app/config.json 加载 (Docker 环境)
+    config_file = Path("/app/config.json")
+    if not config_file.exists():
+        # 2. fallback 到原来的位置 (开发环境)
+        base_path = Path(__file__).parent
+        config_file = base_path / "config.json"
 
-    # 1. Try loading from config file
-    config_file = base_path / "config.json"
     config = ServerConfig.from_file(config_file)
 
     # 2. Override with environment variables if set

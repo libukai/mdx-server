@@ -9,7 +9,7 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["ruff>=0.12.1", "pytest>=8.0.0", "mypy>=1.17.1"]
+dev = ["ruff>=0.12.1", "pytest>=8.0.0", "mypy>=1.17.1", "rich>=14.1.0"]
 
 [build-system]
 requires = ["uv_build>=0.8.0"]

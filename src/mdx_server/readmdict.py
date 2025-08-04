@@ -533,7 +533,9 @@ class MDict:
 
                 # Process record using provided function or return raw data
                 if process_record_func:
-                    processed_record = process_record_func(record, key_text, self._encoding)
+                    processed_record = process_record_func(
+                        record, key_text, self._encoding
+                    )
                     yield key_text, processed_record
                 else:
                     yield key_text, record
@@ -602,9 +604,7 @@ class MDX(MDict):
         """Process MDX record with text decoding and stylesheet substitution."""
         # convert to utf-8
         processed_record = (
-            record.decode(encoding, errors="ignore")
-            .strip("\x00")
-            .encode("utf-8")
+            record.decode(encoding, errors="ignore").strip("\x00").encode("utf-8")
         )
         # substitute styles
         if self._substyle and self._stylesheet:

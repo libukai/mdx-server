@@ -104,3 +104,4 @@ ENV/
 
 # Dict
 dict/
+logs/

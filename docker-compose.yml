@@ -5,16 +5,18 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      # 词典文件目录 - 将本地 dict 目录映射到容器内的词典目录
-      - ./dict:/app/src/mdx_server/dict
+      # 词典文件目录 - 直接映射到容器根目录的 /dict
+      - ./dict:/dict
+      # 配置文件 - 映射到 /app 根目录
+      - ./config.json:/app/config.json
       # 可选：日志目录
       - ./logs:/app/logs
-    environment:
-      # 可以通过环境变量覆盖配置
-      - MDX_HOST=0.0.0.0
-      - MDX_PORT=8000
-      - MDX_DEBUG=false
-      - MDX_LOG_LEVEL=INFO
+    # environment:
+      # 可选配置：如需自定义服务器参数请取消注释并修改
+      # MDX_PORT: 8000          # 服务器端口，默认: 8000
+      # MDX_DEBUG: true         # 调试模式，默认: false  
+      # MDX_LOG_LEVEL: DEBUG    # 日志级别，默认: INFO
+      # MDX_DICT_DIR: /dict     # 词典目录，默认: 自动检测
     restart: unless-stopped
     healthcheck:
       test:
